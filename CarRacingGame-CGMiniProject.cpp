@@ -135,7 +135,7 @@ void reshape(int w, int h) {
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity(); 
 
-	// Calculate aspect ratio of the new window
+	
 	float aspect = (float)w / (float)h;
 
 	
@@ -168,11 +168,13 @@ void frontPage() {
 	// Instructions of the game
 	glColor3f(1.0, 1.0, 0.0);
 	drawString(-100.0, -75.0, "Instructions");
-	drawString(-200.0, -125.0, "1. Press 's' OR 'S' key to Start the game.");
-	drawString(-200.0, -150.0, "2. Press 'L' for car to move left.");
-	drawString(-200.0, -175.0, "3. Press 'R' for car to move right.");
-	drawString(-200.0, -200.0, "4. Press 'U' to speed up car.");
-	drawString(-200.0, -225.0, "5. Start Game by 's' Or 'S' key");
+	drawString(-235.0, -125.0, "1. Press 'u' or 'U' simulating forward movement of car.");
+	drawString(-235.0, -150.0, "2. Press 'L' for car to move left.");
+	drawString(-235.0, -175.0, "3. Press 'R' for car to move right.");
+	drawString(-235.0, -200.0, "4. Press 'w' or 'W' simulating backward movement of car.");
+	drawString(-235.0, -225.0, "5. Press '-' to decrease speed.");
+	drawString(-235.0, -250.0, "6. Press '=' to increase speed.");
+	drawString(-235.0, -275.0, "7. Press 's' or 'S' to start the game.");
 	glutSwapBuffers();
 }
 void startGame() {
