@@ -95,7 +95,7 @@ void draw_car(int x, int y) {
 	glVertex2f(40.0 + x, 23.0 + y);
 	glEnd();
 
-	// Additional details (yellow polygons)
+	
 	glColor3f(0.2, 0.2, 0.2);
 	glBegin(GL_POLYGON); // Front left detail
 	glVertex2f(-30.0 + x, 25.0 + y);
@@ -177,7 +177,7 @@ void frontPage() {
 }
 void startGame() {
 	gameStarted = true;
-	printf("Hello world\n");
+	//printf("Hello world\n");
 	glutPostRedisplay();
 }
 void display() {
