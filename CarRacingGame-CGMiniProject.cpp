@@ -2,10 +2,18 @@
 #include<stdlib.h>
 #include<math.h>
 #include<string.h>
+#include<random>
+#include<iostream>
 #include<GL/glut.h>
+using namespace std;
 
 bool gameStarted = false;
-float car_x,road_y,speed=10;
+float car_x,road_y,speed=0;
+float score = 0;
+float obstacles[3][2] = { {-600,-100},
+	{-600,100},
+	{-600,300}
+};
 void draw_road(int x, int y) {
 	glColor3f(0.2, 0.2, 0.2);
 	//printf("Hello world");
@@ -121,7 +129,44 @@ void draw_car(int x, int y) {
 	glVertex2f(30.0 + x, 40.0 + y);
 	glEnd();
 }
-void draw_obstacle(int x, int y);
+void calculateObstacles() {
+	float obstacle_x, obstacle_y;
+	srand(static_cast<unsigned int>(time(0)));
+	float x_coord_choices[] = { -50.0,50.0 };
+	 // Choices for x-coordinates within road boundaries
+	for (int i = 0; i < 3; i++) {
+		obstacle_y = road_y - 300 + i * 200;
+		if (obstacle_y < -300) {
+			obstacle_y += 600;
+
+		}
+		obstacle_x = x_coord_choices[rand() % 2];
+		obstacles[i][0] = obstacle_x;
+		if (obstacle_y > 300) {
+			obstacle_y -= 600;
+		}
+		obstacles[i][1] = obstacle_y;
+	}
+}
+void draw_rectangle(int x, int y) {
+	glColor3f(1, 1, 0); 
+	glBegin(GL_QUADS);
+	glVertex2f(x - 25, y - 15); 
+	glVertex2f(x + 25, y - 15);
+	glVertex2f(x + 25, y + 15);
+	glVertex2f(x - 25, y + 15);
+	glEnd();
+}
+
+void draw_obstacles() {
+	for (int i = 0; i < 3; i++) {
+		float x1 = obstacles[i][0];
+		float y1 = obstacles[i][1];
+		if (y1 >= -300 && y1 <= 300) { // Only draw obstacles within the screen
+			draw_rectangle(x1, y1);
+		}
+	}
+}
 
 void init() {
 	//glClearColor(0.0, 0.0, 0.0, 1.0);
@@ -191,10 +236,15 @@ void display() {
 	else {
 		glClearColor(1.0, 1.0, 1.0, 1.0);
 		glClear(GL_COLOR_BUFFER_BIT);
+		//calculateObstacles();
 		draw_road(0,road_y);
 		draw_road(0,road_y-600);
 		draw_road(0,road_y+600);
+		draw_obstacles();
 		draw_car(car_x, -150);
+		char scoreText[20];
+		sprintf_s(scoreText, "Score:%.2f", score);
+		drawString(-370.0, 280.0, scoreText);
 		glutSwapBuffers();
 	}
 }
@@ -207,6 +257,7 @@ void keyboard(unsigned char key, int x, int y) {
 		if (road_y > 600) {
 			road_y -= 600;
 		}
+		score = 0;
 	}
 	else if (key == 'u' || key == 'U') {
 		road_y -= speed;
@@ -241,12 +292,18 @@ void keyboard(unsigned char key, int x, int y) {
 	glutPostRedisplay();
 }
 void idle(int t) {
-	road_y -= speed/10;
-	//printf("%f,%f\n", speed,road_y);
-	if (road_y <0) {
-		road_y += 600;
+	if (speed > 0) { // Only move obstacles if the car is moving
+		road_y -= speed / 10;
+		if (road_y < 0) {
+			road_y += 600;
+		}
+		calculateObstacles();
+		score += speed / 10;
 	}
-	glutTimerFunc(50, idle,0);
+	else {
+		score = 0;
+	}
+	glutTimerFunc(50, idle, 0);
 	glutPostRedisplay();
 }
 int main(int argc, char** argv) {
