@@ -8,8 +8,10 @@
 using namespace std;
 
 bool gameStarted = false;
+bool gameOver = false;
 float car_x,road_y,speed=0;
 float score = 0;
+float maxscore = 0;
 float obstacles[3][2] = { {-600,-100},
 	{-600,100},
 	{-600,300}
@@ -136,14 +138,21 @@ void calculateObstacles() {
 	 // Choices for x-coordinates within road boundaries
 	for (int i = 0; i < 3; i++) {
 		obstacle_y = road_y - 300 + i * 200;
-		if (obstacle_y < -300) {
+		if (obstacle_y < -290) {
 			obstacle_y += 600;
+		    //obstacle_x = x_coord_choices[rand() % 2];
+		   // obstacles[i][0] = obstacle_x;
 
 		}
-		obstacle_x = x_coord_choices[rand() % 2];
-		obstacles[i][0] = obstacle_x;
 		if (obstacle_y > 300) {
 			obstacle_y -= 600;
+		}
+
+		if (abs(obstacle_y-obstacles[i][1]) > 300) {
+			//obstacle_y += 600;
+			obstacle_x = x_coord_choices[rand() % 2];
+			obstacles[i][0] = obstacle_x;
+
 		}
 		obstacles[i][1] = obstacle_y;
 	}
@@ -166,6 +175,16 @@ void draw_obstacles() {
 			draw_rectangle(x1, y1);
 		}
 	}
+}
+bool check_collision() {
+	for (int i = 0; i < 3; i++) {
+		float ox = obstacles[i][0];
+		float oy = obstacles[i][1];
+		if (abs(ox - car_x) < 55 && abs(oy +175) < 65) {
+			return true;
+		}
+	}
+	return false;
 }
 
 void init() {
@@ -222,16 +241,52 @@ void frontPage() {
 	drawString(-235.0, -275.0, "7. Press 's' or 'S' to start the game.");
 	glutSwapBuffers();
 }
+void restartGame() {
+	gameStarted = true;
+	gameOver = false;
+	road_y = 0;
+	car_x = 0;
+	score = 0;
+	speed = 0;
+	calculateObstacles();
+	glutPostRedisplay();
+}
 void startGame() {
 	gameStarted = true;
 	//printf("Hello world\n");
+	calculateObstacles();
 	glutPostRedisplay();
+	//road_y = 0; // Initialize road position
+	//car_x = 0;  // Initialize car position
+	//speed = 0;  // Initialize speed
+	//score = 0;  // Initialize score
+	//maxscore = maxscore < score ? score : maxscore; // Update maxscore if needed
+	//calculateObstacles(); // Calculate initial obstacles
+	//glutPostRedisplay();
 }
 void display() {
 	glClearColor(0.0, 0.0, 0.0, 1.0);
 	glClear(GL_COLOR_BUFFER_BIT);
 	if (!gameStarted) {
 		frontPage();
+	}
+	else if (gameOver) {
+		glColor3f(0.0, 0.0, 0.0);
+		glBegin(GL_QUADS);
+		glVertex2f(-200.0, -100.0);
+		glVertex2f(200.0, -100.0);
+		glVertex2f(200.0, 100.0);
+		glVertex2f(-200.0, 100.0);
+		glEnd();
+
+		glColor3f(1.0, 0.0, 0.0);
+		drawString(-100.0, 30.0, "GAME OVER");
+		char maxScoreStr[50];
+		sprintf_s(maxScoreStr, "High Score:%.2f", maxscore);
+		glColor3f(1.0, 1.0, 0.0);
+		drawString(-100.0, -10.0, maxScoreStr);
+		drawString(-100.0, -50.0, "Press 'a' or 'A' to restart the Game");
+		glutSwapBuffers();
 	}
 	else {
 		glClearColor(1.0, 1.0, 1.0, 1.0);
@@ -249,7 +304,7 @@ void display() {
 	}
 }
 void keyboard(unsigned char key, int x, int y) {
-	if (key == 's' || key == 'S') {
+	if (key == 's' || key == 'S' && !gameStarted) {
 		startGame();
 	}
 	else if (key == 'w' || key == 'W') {
@@ -264,6 +319,7 @@ void keyboard(unsigned char key, int x, int y) {
 		if (road_y < 0) {
 			road_y += 600;
 		}
+		score += speed / 10;
 	}
 	else if (key == 'l' || key == 'L') {
 		car_x-=3;
@@ -289,19 +345,42 @@ void keyboard(unsigned char key, int x, int y) {
 			speed = 100;
 		}
 	}
+	else if (key == 'a' || key == 'A') {
+		if (gameOver) {
+			restartGame();
+		}
+		
+	}
 	glutPostRedisplay();
 }
 void idle(int t) {
-	if (speed > 0) { // Only move obstacles if the car is moving
-		road_y -= speed / 10;
-		if (road_y < 0) {
-			road_y += 600;
+	if (gameStarted && !gameOver) { // Only move if the game has started
+		if (speed > 0) {
+			road_y -= speed / 10;
+			if (road_y < 0) {
+				road_y += 600;
+			}
+			calculateObstacles();
+			score += speed / 10;
+			//cout << (int)abs(obstacles[0][0] - car_x) << "," << obstacles[0][1]  << "\t";
+			//cout << (int)abs(obstacles[1][0] - car_x) << "," << obstacles[1][1]  << "\t";
+			//cout << (int)abs(obstacles[2][0] - car_x) << "," << obstacles[2][1]  << "\t";
+			//cout << car_x << "," << road_y << "\n";// Update score while moving
+			if (check_collision()) {
+				//cout << obstacles[0][0] << "," << obstacles[0][1] << "_";
+				//cout << obstacles[1][0] << "," << obstacles[1][1] << "_";
+				//cout << obstacles[2][0] << "," << obstacles[2][1] << "_";
+				//cout << car_x<<","<<road_y<<"\n";
+				obstacles[0][0] = obstacles[1][0] = obstacles[2][0] = 600;
+				gameOver = true;
+				if (score > maxscore) {
+					maxscore = score;
+				}
+			}
 		}
-		calculateObstacles();
-		score += speed / 10;
 	}
-	else {
-		score = 0;
+	else if (speed == 0) {
+		score = 0; // Reset score if speed is zero
 	}
 	glutTimerFunc(50, idle, 0);
 	glutPostRedisplay();
