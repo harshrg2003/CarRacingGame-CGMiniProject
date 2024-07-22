@@ -12,10 +12,108 @@ bool gameOver = false;
 float car_x,road_y,speed=0;
 float score = 0;
 float maxscore = 0;
-float obstacles[3][2] = { {-600,-100},
-	{-600,100},
-	{-600,300}
+float obstacles[3][2] = { {-900,-100},
+	{-900,100},
+	{-900,300}
 };
+void drawVwin(int x, int y) {
+	float points[4][2] = { 0,50,20,92,20,42,0,0 };
+	glBegin(GL_QUADS);
+	glColor3f(0.6, 0.7, 0.6);
+	for (int i = 0; i < 4; i++) {
+		if (x > 0) {
+			glVertex2f(+points[i][0] + x, points[i][1] + y);
+		}
+		else {
+			glVertex2f(-points[i][0] + x, points[i][1] + y);
+		}
+
+	}
+	glEnd();
+}
+void drawHwin(int x, int y) {
+	float points[4][2] = { 0,0,
+		63, 0,
+		87, 45,
+		24,45 };
+	glBegin(GL_QUADS);
+	glColor3f(0.6, 0.7, 0.6);
+	for (int i = 0; i < 4; i++) {
+		if (x > 0) {
+			glVertex2f(points[i][0] + x, points[i][1] + y);
+		}
+		else {
+			glVertex2f(-points[i][0] + x, points[i][1] + y);
+		}
+
+	}
+	glEnd();
+}
+void drawHwall(int x, int y) {
+	float points[4][2] = { 0,0,340,0,455,230,115,230 };
+	glBegin(GL_QUADS);
+	glColor3f(0.5, 0.5, 0.5);
+	for (int i = 0; i < 4; i++) {
+		if (x > 0) {
+			glVertex2f(+points[i][0] + x, points[i][1] + y);
+		}
+		else {
+			glVertex2f(-points[i][0] + x, points[i][1] + y);
+		}
+
+	}
+	glEnd();
+
+}
+void drawVwall(int x, int y) {
+	float points[4][2] = { 0,0,115,230,115,450,0,220 };
+	glBegin(GL_QUADS);
+	glColor3f(0.35, 0.4, 0.3);
+	for (int i = 0; i < 4; i++) {
+		if (x > 0) {
+			glVertex2f(+points[i][0] + x, points[i][1] + y);
+		}
+		else {
+			glVertex2f(-points[i][0] + x, points[i][1] + y);
+		}
+	}
+	glEnd();
+}
+void draw1Building(int x, int y) {
+	drawHwall(x, y);
+	drawVwall(x, y);
+	int sign = 1;
+	if (x < 0) {
+		sign = -1;
+	}
+	drawHwin(x + 40 * sign, y + 10);
+	drawHwin(x + 150 * sign, y + 10);
+	drawHwin(x + 260 * sign, y + 10);
+	drawHwin(x + 70 * sign, y + 70);
+	drawHwin(x + 180 * sign, y + 70);
+	drawHwin(x + 290 * sign, y + 70);
+	drawHwin(x + 100 * sign, y + 130);
+	drawHwin(x + 210 * sign, y + 130);
+	drawHwin(x + 320 * sign, y + 130);
+	drawVwin(x + 20 * sign, y + 60);
+	drawVwin(x + 20 * sign, y + 170);
+	drawVwin(x + 50 * sign, y + 120);
+	drawVwin(x + 50 * sign, y + 230);
+	drawVwin(x + 80 * sign, y + 180);
+	drawVwin(x + 80 * sign, y + 290);
+	glColor3f(1.0, 1.0, 0.0);
+	glBegin(GL_QUADS);
+	glVertex2f(x + 115 * sign, y + 230);
+	glVertex2f(x + 455 * sign, y + 230);
+	glVertex2f(x + 455 * sign, y + 450);
+	glVertex2f(x + 115 * sign, y + 450);
+	glEnd();
+
+}
+void drawBuildings(int y) {
+	draw1Building(-150, road_y+y);
+	draw1Building(150, road_y+y);
+}
 void draw_road(int x, int y) {
 	glColor3f(0.2, 0.2, 0.2);
 	//printf("Hello world");
@@ -293,8 +391,12 @@ void display() {
 		glClear(GL_COLOR_BUFFER_BIT);
 		//calculateObstacles();
 		draw_road(0,road_y);
+		drawBuildings(0);
 		draw_road(0,road_y-600);
+		drawBuildings(-600);
+		drawBuildings(-1200);
 		draw_road(0,road_y+600);
+		drawBuildings(+600);
 		draw_obstacles();
 		draw_car(car_x, -150);
 		char scoreText[20];
@@ -371,7 +473,7 @@ void idle(int t) {
 				//cout << obstacles[1][0] << "," << obstacles[1][1] << "_";
 				//cout << obstacles[2][0] << "," << obstacles[2][1] << "_";
 				//cout << car_x<<","<<road_y<<"\n";
-				obstacles[0][0] = obstacles[1][0] = obstacles[2][0] = 600;
+				obstacles[0][0] = obstacles[1][0] = obstacles[2][0] = 800;
 				gameOver = true;
 				if (score > maxscore) {
 					maxscore = score;
